@@ -179,6 +179,13 @@ def render_tab(df: pd.DataFrame, key_prefix: str):
         st.warning("No hay actores para los filtros seleccionados.")
         return
 
+    mostrar_nombres = st.checkbox(
+        "Mostrar nombre del actor junto a cada punto",
+        value=len(plot_df) <= 40,
+        key=f"{key_prefix}_show_labels",
+        help="Con muchos actores el gráfico puede saturarse; desactívalo si se ve muy apretado.",
+    )
+
     plot_df = plot_df.copy()
     plot_df["hover"] = plot_df.apply(build_hover_text, axis=1)
 
@@ -194,10 +201,13 @@ def render_tab(df: pd.DataFrame, key_prefix: str):
         fig.add_trace(go.Scatter(
             x=group["Interes"],
             y=group["Poder"],
-            mode="markers",
+            mode="markers+text" if mostrar_nombres else "markers",
             name=str(clasif),
             marker=dict(size=13, color=color, opacity=0.85,
                         line=dict(width=1, color=IDOM["blanco"])),
+            text=group["Actor"] if mostrar_nombres else None,
+            textposition="top center",
+            textfont=dict(size=9, color=IDOM["negro"], family=FONT_FAMILY),
             hovertext=group["hover"],
             hoverinfo="text",
         ))
