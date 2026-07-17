@@ -227,9 +227,6 @@ def render_header():
             st.image(str(LOGO_PATH), width=140)
     with cols[1]:
         st.title("Dashboard de Matriz de Mendelow — Actores por país")
-        st.caption(
-            "Proyecto A (GIZ/TransCERO) y Proyecto B (DNP/BID) · Uso interno del equipo de proyecto."
-        )
 
 
 def render_footer():
