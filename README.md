@@ -1,8 +1,8 @@
 # Dashboard Matriz de Mendelow — Actores por país
 
-App en Streamlit que convierte el Excel de matrices de actores (Proyecto A GIZ/TransCERO
-y Proyecto B DNP/BID) en un scatter interactivo Poder–Interés (matriz de Mendelow),
-con un tab por hoja/país:
+App interna en Streamlit que muestra la matriz de Mendelow (Poder–Interés)
+de los actores de cada país/proyecto (Proyecto A GIZ/TransCERO y Proyecto B
+DNP/BID), con un tab por hoja:
 
 - 🌎 Regional (Retrofit y H2)
 - 🇲🇽 México
@@ -10,22 +10,59 @@ con un tab por hoja/país:
 - 🇵🇪 Perú
 - 🇨🇱 Chile
 
-## Cómo funciona
+Los datos vienen **embebidos en el repo** (carpeta `data/`), no hay que
+subir ningún Excel al abrir la app.
 
-1. Al abrir la app, se sube el archivo `.xlsx` con el mismo formato de columnas
-   usado en `Matriz_de_Actores_-_Identificación_y_análisis.xlsx`
-   (columnas: Actor, Categorización de actores, Clasificación en Matriz Mendelow,
-   Interés (0-10), Poder (0-10), justificaciones, etc.).
-2. La app detecta las hojas por nombre, normaliza encabezados (tolera pequeñas
-   variaciones de mayúsculas/tildes entre hojas) y genera:
-   - Un scatter Interés (eje X) vs. Poder (eje Y) con los 4 cuadrantes de Mendelow
-     (Manejar de cerca / Mantener satisfecho / Mantener informado / Hacer seguimiento).
-   - Tooltip por actor con categoría, alcance (solo hoja Regional), puntajes y
-     un extracto de las justificaciones de poder e interés.
-   - Filtro multiselección por categoría de actor.
+Sigue la **Guía de Identidad Visual de IDOM** (v02.00, 22.05.2026): tipografía
+Arial, Azul IDOM (#10069F) para títulos y la clasificación de mayor
+prioridad ("Manejar de cerca"), Azul claro IDOM (#00B5E2) como color
+secundario, Gris medio IDOM (#86867A) para lo de menor prioridad y Naranja
+como único acento complementario — respetando el criterio de la guía de no
+saturar los gráficos con colores complementarios.
 
-No se guarda ningún dato: el Excel se procesa en memoria de la sesión (`st.cache_data`
-solo cachea mientras la sesión está activa).
+## Estructura del repo
+
+```
+mendelow-dashboard/
+├── app.py               # App de Streamlit (lee data/*.csv)
+├── data_utils.py         # Normalización de columnas del Excel de origen
+├── build_data.py          # Regenera data/*.csv a partir del Excel de origen
+├── data/
+│   ├── regional.csv
+│   ├── mexico.csv
+│   ├── colombia.csv
+│   ├── peru.csv
+│   └── chile.csv
+├── assets/
+│   ├── idom_logo.png     # (opcional) logo oficial positivo, ver assets/README.md
+│   └── README.md
+├── .streamlit/
+│   └── config.toml       # tema con colores corporativos IDOM
+├── requirements.txt
+└── README.md
+```
+
+## Cómo actualizar los datos
+
+Cuando el Excel de actores cambie (nuevas filas, puntajes actualizados,
+etc.):
+
+```bash
+python build_data.py "Matriz_de_Actores_-_Identificación_y_análisis.xlsx"
+git add data/
+git commit -m "Actualiza datos de matriz de actores"
+git push
+```
+
+Streamlit Community Cloud redespliega automáticamente al hacer push a `main`.
+
+## Logo corporativo
+
+Descarga el logotipo IDOM en versión positiva (PNG) desde el Workplace,
+pestaña *Corporate/Commercial*, y guárdalo como `assets/idom_logo.png`. La
+app lo detecta automáticamente. Si no está presente, la app funciona igual
+sin logo (nunca se reconstruye el logotipo con texto/tipografía, tal como
+indica la guía).
 
 ## Ejecutar en local
 
@@ -34,43 +71,30 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Desplegar en Streamlit Community Cloud (gratis) vía GitHub
+## Desplegar en Streamlit Community Cloud vía GitHub
 
-1. Crea un repositorio en GitHub y sube estos archivos (`app.py`, `requirements.txt`,
-   este `README.md`):
+1. Crea un repositorio en GitHub y sube todos estos archivos:
 
    ```bash
    git init
    git add .
-   git commit -m "Dashboard Mendelow - actores"
+   git commit -m "Dashboard Mendelow - actores (identidad IDOM)"
    git branch -M main
    git remote add origin https://github.com/<tu-usuario>/<tu-repo>.git
    git push -u origin main
    ```
 
-2. Ve a [share.streamlit.io](https://share.streamlit.io) (Streamlit Community Cloud),
-   inicia sesión con tu cuenta de GitHub.
-3. Click en **"New app"** → selecciona el repositorio, la rama `main` y el archivo
-   `app.py` como entry point.
-4. Click en **Deploy**. Streamlit instalará `requirements.txt` automáticamente y la
-   app quedará disponible en una URL pública tipo
-   `https://<tu-app>.streamlit.app`.
-5. Cada vez que hagas `git push` a `main`, la app se redepliega sola.
-
-## Estructura del repo
-
-```
-mendelow-dashboard/
-├── app.py             # App de Streamlit
-├── requirements.txt   # Dependencias
-└── README.md
-```
+2. Ve a [share.streamlit.io](https://share.streamlit.io), inicia sesión con
+   tu cuenta de GitHub.
+3. **New app** → selecciona el repo, la rama `main` y `app.py` como entry
+   point → **Deploy**.
+4. Cada `git push` a `main` redespliega la app automáticamente.
 
 ## Notas
 
-- Si en el futuro quieres que los datos vengan embebidos en el repo (en vez de
-  subir el Excel cada vez), basta con guardar el `.xlsx` dentro del repo y
-  reemplazar el `st.file_uploader` por una lectura directa del archivo con
-  `pd.ExcelFile("data/matriz.xlsx")`.
-- Si agregas más países/proyectos en el futuro, solo hace falta añadir la hoja
-  correspondiente al diccionario `SHEET_TABS` en `app.py`.
+- `data_utils.py` es el único lugar donde vive la lógica de mapeo de
+  columnas heterogéneas entre hojas — si el Excel de origen cambia nombres
+  de columnas, ajusta ahí `normalize_columns`.
+- Si en el futuro se agregan más países/proyectos, añade la hoja al
+  diccionario `SHEET_SLUGS` / `TAB_LABELS` en `data_utils.py` y vuelve a
+  correr `build_data.py`.
