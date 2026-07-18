@@ -142,18 +142,18 @@ def quadrant_annotations():
 def build_hover_text(row: pd.Series) -> str:
     parts = [f"<b>{row.get('Actor', '')}</b>"]
     if pd.notna(row.get("Categoria")):
-        parts.append(f"Categoría: {row['Categoria']}")
+        parts.append(f"<b>Categoría:</b> {row['Categoria']}")
     if "Alcance" in row and pd.notna(row.get("Alcance")):
-        parts.append(f"Alcance: {row['Alcance']}")
-    parts.append(f"Poder: {row.get('Poder')} | Interés: {row.get('Interes')}")
+        parts.append(f"<b>Alcance:</b> {row['Alcance']}")
+    parts.append(f"<b>Poder:</b> {row.get('Poder')} | <b>Interés:</b> {row.get('Interes')}")
     if pd.notna(row.get("Mendelow")):
-        parts.append(f"Clasificación: {row['Mendelow']}")
+        parts.append(f"<b>Clasificación:</b> {row['Mendelow']}")
     if pd.notna(row.get("Justificacion_Poder")):
         just = str(row["Justificacion_Poder"])
-        parts.append(f"<i>Poder:</i> {just[:180]}{'…' if len(just) > 180 else ''}")
+        parts.append(f"<b><i>Poder:</i></b> {just[:180]}{'…' if len(just) > 180 else ''}")
     if pd.notna(row.get("Justificacion_Interes")):
         just = str(row["Justificacion_Interes"])
-        parts.append(f"<i>Interés:</i> {just[:180]}{'…' if len(just) > 180 else ''}")
+        parts.append(f"<b><i>Interés:</i></b> {just[:180]}{'…' if len(just) > 180 else ''}")
     return "<br>".join(parts)
 
 
