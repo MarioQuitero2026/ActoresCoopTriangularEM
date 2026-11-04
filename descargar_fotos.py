@@ -97,12 +97,15 @@ def main():
             try:
                 r = ctx.request.get(u, headers={"Referer": page.url})
                 if not r.ok:
+                    print(f"  SKIP status {r.status}: {u}")
                     continue
                 tipo = r.headers.get("content-type", "").split(";")[0]
                 if not tipo.startswith("image/"):
+                    print(f"  SKIP tipo '{tipo}': {u}")
                     continue
                 cuerpo = r.body()
-                if len(cuerpo) < 5_000:  # descarta miniaturas/iconos
+                if len(cuerpo) < 1_000:  # descarta pixeles/iconos diminutos
+                    print(f"  SKIP muy pequeña ({len(cuerpo)} bytes): {u}")
                     continue
                 ext = mimetypes.guess_extension(tipo) or ".jpg"
                 nombre = hashlib.md5(u.encode()).hexdigest()[:10] + ext
