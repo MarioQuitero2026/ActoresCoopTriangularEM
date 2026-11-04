@@ -100,15 +100,19 @@ def main():
                     print(f"  SKIP status {r.status}: {u}")
                     continue
                 tipo = r.headers.get("content-type", "").split(";")[0]
-                if not tipo.startswith("image/"):
+                ext_url = Path(urlparse(u).path).suffix.lower()
+                es_img_url = ext_url in (".jpg", ".jpeg", ".png", ".webp")
+                if not tipo.startswith("image/") and not es_img_url:
                     print(f"  SKIP tipo '{tipo}': {u}")
                     continue
                 cuerpo = r.body()
                 if len(cuerpo) < 1_000:  # descarta pixeles/iconos diminutos
                     print(f"  SKIP muy pequeña ({len(cuerpo)} bytes): {u}")
                     continue
-                ext = mimetypes.guess_extension(tipo) or ".jpg"
-                nombre = hashlib.md5(u.encode()).hexdigest()[:10] + ext
+                ext = ext_url if es_img_url else (mimetypes.guess_extension(tipo) or ".jpg")
+                nombre = Path(urlparse(u).path).stem + ext
+                if (out / nombre).exists():
+                    nombre = hashlib.md5(u.encode()).hexdigest()[:10] + ext
                 (out / nombre).write_bytes(cuerpo)
                 guardadas += 1
                 print(f"  OK  {nombre}  <- {u}")
